@@ -1,6 +1,8 @@
 # DarkSaves
 A simple program to quickly load and save files. Made 100% in python using tkinter for the gui.
 
+This program can be used to quicksave for any supported games or manage files, and "quick save" without having to leave the application by pressing hotkeys.
+
 1. Set the source file, this will be the file to make copies of.
 2. Set the path directory, this will be the directory in which all the save files will be stored
 3. Click "save" to make a backup of the file
