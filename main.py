@@ -59,32 +59,36 @@ def saveEntry(gui, config):
 
 
 def loadEntry(gui, conf):
+    selection = gui.listbox.curselection()[0]
     dest = conf.srcfile
-    if dest != '':
+    if dest == '':
+        print(f"destination: {dest}\n")
         gui.showerrormsg("Error", "Choose a source file!")
         return
     savepath = conf.savepath
-    if savepath != '':
+    if savepath == '':
+        print(f"destination: {savepath}\n")
         gui.showerrormsg("Error", "Choose a save path!")
         return
-    src = gui.listbox.get(ANCHOR)
-    if gui.listbox.get(ANCHOR) == '':
+    src = gui.listbox.get(selection)
+    if gui.listbox.get(selection) == '':
         src = gui.listbox.get(END)
     selectedFile = os.path.join(conf.savepath, src)
     shutil.copy(selectedFile, dest)
     print(f"{src} file loaded!")
 
 
-def deleteEntry(gui, config):
-    selectedFile = os.path.join(config.savepath, gui.listbox.get(ANCHOR))
+def deleteEntry(gui, config, event=None):
+    selection = gui.listbox.curselection()[0]
+    selectedFile = os.path.join(config.savepath, gui.listbox.get(selection))
     print(selectedFile)
-    if os.path.exists(selectedFile) and gui.listbox.get(ANCHOR) != '':
-        response = messagebox.askokcancel("Confirm deletion", f"Delete {gui.listbox.get(ANCHOR)}?")
+    if os.path.exists(selectedFile) and gui.listbox.get(selection) != '':
+        response = messagebox.askokcancel(title="Confirm deletion", message=f"Delete {gui.listbox.get(selection)}?")
         if response:
             os.remove(selectedFile)
+            gui.listbox.delete(selection)
     else:
         print("File does not exist!")
-    gui.listbox.delete(ANCHOR)
 
 
 def renameEntry(gui, config):
@@ -124,8 +128,20 @@ def refreshPath(gui, conf):
     gui.path.set('')
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 if __name__ == '__main__':
     gui = Gui("320x280", "Dark Saves")
+    gui.root.iconbitmap(resource_path('data/save.ico'))
     conf = Config()
     gui.src.trace("w", lambda name, index, mode: conf.updateSrcfile(gui.src.get()))
     gui.path.trace("w", lambda name, index, mode: updateEntries(gui, conf))
@@ -143,8 +159,8 @@ if __name__ == '__main__':
     gui.loadkey.bind('<KeyRelease>', lambda event: hotkey(event, conf))
     gui.savekey.bind('<FocusIn>', removehotkey)
     gui.loadkey.bind('<FocusIn>', removehotkey)
-    gui.savekey.bind('<FocusOut>', lambda var=gui: conf.updateHotkeys(gui, "save", saveEntry, loadEntry))
-    gui.loadkey.bind('<FocusOut>', lambda var=gui: conf.updateHotkeys(gui, "load", saveEntry, loadEntry))
+    gui.savekey.bind('<FocusOut>', lambda: conf.updateHotkeys(gui, "save", saveEntry, loadEntry))
+    gui.loadkey.bind('<FocusOut>', lambda: conf.updateHotkeys(gui, "load", saveEntry, loadEntry))
     # again, the above is way too long and complicated
 
     # make buttons do stuff
@@ -152,6 +168,7 @@ if __name__ == '__main__':
     gui.loadBtn.config(command=lambda: loadEntry(gui, conf))
     gui.renameBtn.config(command=lambda: renameEntry(gui, conf))
     gui.deleteBtn.config(command=lambda: deleteEntry(gui, conf))
+    gui.root.bind('<Delete>', lambda event: deleteEntry(gui, conf))
     gui.resetBtnfirst.config(command=lambda: refreshSrc(gui, conf))
     gui.resetBtnsecond.config(command=lambda: refreshPath(gui, conf))
 
@@ -160,5 +177,3 @@ if __name__ == '__main__':
 
     # display program
     gui.render()
-
-
