@@ -106,10 +106,15 @@ def on_close():
 
 
 def removehotkey(event):
-    keyboard.remove_all_hotkeys()
+    try:
+        print(event.widget.get())
+        keyboard.remove_hotkey(event.keysym)
+    except KeyError:
+        pass
 
 
 def hotkey(event, config):
+    print("hello")
     whitelist = ('BackSpace', 'space', 'Return', 'Escape', 'w', 'a', 's', 'd', 'g', 'q', 'r', 'f', 'Shift_L', 'Shift_R', config.loadhotkey, config.savehotkey)
     if event.keysym in whitelist:
         event.widget.delete(0, 'end')
@@ -159,8 +164,8 @@ if __name__ == '__main__':
     gui.loadkey.bind('<KeyRelease>', lambda event: hotkey(event, conf))
     gui.savekey.bind('<FocusIn>', removehotkey)
     gui.loadkey.bind('<FocusIn>', removehotkey)
-    gui.savekey.bind('<FocusOut>', lambda: conf.updateHotkeys(gui, "save", saveEntry, loadEntry))
-    gui.loadkey.bind('<FocusOut>', lambda: conf.updateHotkeys(gui, "load", saveEntry, loadEntry))
+    gui.savekey.bind('<FocusOut>', lambda event: conf.updateHotkeys(gui, "save", saveEntry, loadEntry))
+    gui.loadkey.bind('<FocusOut>', lambda event: conf.updateHotkeys(gui, "load", saveEntry, loadEntry))
     # again, the above is way too long and complicated
 
     # make buttons do stuff
